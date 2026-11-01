@@ -1,0 +1,14 @@
+/target
+**/*.rs.bk
+**/*.swp
+**/*.swo
+*~
+.idea/
+.vscode/
+*.iml
+.DS_Store
+# Generated sandbox artefacts and reports
+*.jsonl
+events*
+*.log
+*.tmp

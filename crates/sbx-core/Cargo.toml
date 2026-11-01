@@ -1,0 +1,11 @@
+[package]
+name = "sbx-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Shared types and policy for sbx"
+
+[dependencies]
+serde.workspace = true

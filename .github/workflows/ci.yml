@@ -1,0 +1,28 @@
+name: CI
+
+# GitHub-hosted runners may not allow every sandbox feature (user namespaces,
+# Landlock, seccomp user-notify). Tests that cannot run must print
+# "SKIPPED: <reason>" visibly; they must never pass silently. Do not treat a
+# hosted-runner limitation as evidence that a protection is broken or works.
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Tests
+        run: cargo test --workspace
+      - name: Doctor (informational)
+        run: cargo run --quiet -p sbx-cli -- doctor || true

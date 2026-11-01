@@ -1,0 +1,11 @@
+[package]
+name = "sbx-sys"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Raw Linux syscall wrappers for sbx; the only crate allowed to use unsafe"
+
+[dependencies]
+libc.workspace = true

@@ -1,0 +1,18 @@
+[package]
+name = "sbx-runner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Sandbox construction and target execution for sbx"
+
+[dependencies]
+sbx-core = { path = "../sbx-core" }
+sbx-sys = { path = "../sbx-sys" }
+thiserror.workspace = true
+
+[features]
+# Test-only: bind SBX_PROOF_HOST at /host without a matching Landlock rule,
+# proving Landlock blocks access even when the mount layer is deliberately loose.
+landlock-proof = []

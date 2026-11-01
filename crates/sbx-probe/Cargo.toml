@@ -1,0 +1,17 @@
+[package]
+name = "sbx-probe"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Host capability probes for sbx doctor"
+
+[dependencies]
+sbx-core = { path = "../sbx-core" }
+sbx-sys = { path = "../sbx-sys" }
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
