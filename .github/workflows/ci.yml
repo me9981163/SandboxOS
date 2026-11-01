@@ -22,7 +22,22 @@ jobs:
         run: cargo fmt --all --check
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
+      # Cargo does not build another package's binary for integration tests.
+      - name: Build test helper
+        run: cargo build --workspace --bins
+      # --nocapture keeps SKIPPED lines visible on hosted runners.
       - name: Tests
-        run: cargo test --workspace
+        run: |
+          set -o pipefail
+          cargo test --workspace -- --nocapture 2>&1 | tee /tmp/sbx-test-output.log
+      # Hosted runners often cannot create unprivileged user namespaces. Surface
+      # every skip without treating it as a pass.
+      - name: Report skipped sandbox tests
+        if: always()
+        run: |
+          count=$(grep -c '^SKIPPED:' /tmp/sbx-test-output.log 2>/dev/null || true)
+          if [ "${count:-0}" -gt 0 ]; then
+            echo "::warning::${count} sandbox skip line(s); see the Tests log"
+          fi
       - name: Doctor (informational)
         run: cargo run --quiet -p sbx-cli -- doctor || true

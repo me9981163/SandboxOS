@@ -34,6 +34,15 @@ worse than a loud refusal.
    repositories go in `/tmp`, never in this repo. No files over 10 MB in the
    repo.
 
+## Path boundary (hard rule)
+
+Never read, list, copy, archive, or search anything outside the project
+directory and `/tmp/sbx-*`. Never touch `$HOME`, `~/.ssh`, `~/.config`, or
+another project. Create clean copies only with `git clone` or `git worktree`;
+never with `cp`, `rsync`, `tar`, `find`, or shell globs. If a task appears to
+require access outside those roots, stop and ask the human first. Cargo's
+implicit use of its own cache is not permission to inspect `$HOME`.
+
 ## Crate layout
 
 | Crate | Responsibility |
@@ -133,8 +142,11 @@ Before every milestone report:
 ```
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
-cargo test --workspace
+cargo test --workspace -- --nocapture
 ```
+
+`--nocapture` keeps `SKIPPED` lines visible instead of hiding them in a
+successful test's captured output.
 
 Plus any targeted commands (for example escape tests, overhead measurements).
 Quote the real result. A red gate is reported as red.
@@ -159,7 +171,7 @@ Use exactly this format after every milestone:
 **Verification gate:**
 - cargo fmt --all --check: ...
 - cargo clippy --workspace --all-targets -- -D warnings: ...
-- cargo test --workspace: ...
+- cargo test --workspace -- --nocapture: ...
 - (other commands run): ...
 
 **Measured results (if applicable):**

@@ -50,6 +50,30 @@ cargo build --release
 
 The binary is `target/release/sbx`.
 
+## Development and testing
+
+The full local gate is documented in [`CONTRIBUTING.md`](CONTRIBUTING.md). On a
+host that can create the sandbox, run:
+
+```sh
+cargo fmt --all --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo build --workspace --bins
+SBX_REQUIRE_SANDBOX=1 cargo test --workspace -- --nocapture
+cargo test -p sbx-cli --features landlock-proof --test landlock_only -- --nocapture
+cargo build --release
+```
+
+`SBX_REQUIRE_SANDBOX=1` makes sandbox-dependent tests fail when the host cannot
+create the sandbox. Without it they print a visible `SKIPPED` line. The
+`landlock-proof` feature is test-only, is not enabled by default, and is not
+part of a normal release build.
+
+GitHub-hosted runners often cannot create unprivileged user namespaces. CI
+therefore skips sandbox-dependent tests, reports the number of skip lines as an
+Actions warning, and does not prove that the protections ran. Run the strict
+local gate on a suitable host before claiming verification.
+
 ## Quick start
 
 Probe the host first. This does not change any settings:
@@ -155,6 +179,8 @@ For the adversary model, protected goals, and known gaps, read
 
 ## Documentation
 
+- [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- [`AGENTS.md`](AGENTS.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
 - [`docs/SECCOMP.md`](docs/SECCOMP.md)
 - [`docs/PATH_POLICY.md`](docs/PATH_POLICY.md)

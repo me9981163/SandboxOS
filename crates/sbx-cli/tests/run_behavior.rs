@@ -12,10 +12,39 @@ use std::os::unix::fs::PermissionsExt;
 use std::process::{Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
-use support::{escape, random_token, sbx, skip_without_sandbox, TempDir};
+use support::{
+    escape, random_token, require_sandbox_from, sandbox_skip_reason, sbx, skip_without_sandbox,
+    TempDir,
+};
 
 fn run_sbx(args: &[&str]) -> std::process::Output {
     Command::new(sbx()).args(args).output().expect("run sbx")
+}
+
+#[test]
+fn require_sandbox_environment_is_strict() {
+    assert!(!require_sandbox_from(None).expect("unset is optional"));
+    assert!(!require_sandbox_from(Some("0")).expect("zero disables the requirement"));
+    assert!(require_sandbox_from(Some("1")).expect("one requires the sandbox"));
+    assert!(require_sandbox_from(Some("")).is_err());
+    assert!(require_sandbox_from(Some("true")).is_err());
+    assert!(require_sandbox_from(Some(" 1")).is_err());
+}
+
+#[test]
+fn optional_skip_returns_a_reason_without_panicking() {
+    assert_eq!(
+        sandbox_skip_reason(Err("no userns".to_string()), false).as_deref(),
+        Some("no userns")
+    );
+    assert_eq!(sandbox_skip_reason(Ok(()), false), None);
+    assert_eq!(sandbox_skip_reason(Ok(()), true), None);
+}
+
+#[test]
+#[should_panic(expected = "SBX_REQUIRE_SANDBOX=1 but the sandbox is unavailable")]
+fn required_sandbox_turns_a_skip_into_a_failure() {
+    sandbox_skip_reason(Err("no userns".to_string()), true);
 }
 
 #[test]
@@ -379,14 +408,14 @@ fn pids_with_argument(argument: &str) -> Vec<i32> {
     found
 }
 
-/// Keep the helper path used by the escape test compiled into this test target
-/// as well, so a missing build is an obvious failure rather than a mystery.
+/// Build the helper used by the escape battery and prove it is executable.
+/// `escape()` builds it if the test runner did not.
 #[test]
 fn escape_helper_is_built_next_to_sbx() {
     let path = escape();
     assert!(
         path.is_file(),
-        "{} is missing; `cargo test --workspace` should build it",
+        "{} is missing after building sbx-escape",
         path.display()
     );
     assert!(
